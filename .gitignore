@@ -1,0 +1,7 @@
+env/
+images/
+/cache/
+
+__pycache__
+
+confidence.xlsx
