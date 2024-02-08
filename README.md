@@ -32,8 +32,8 @@ cd checks-ocr
 
 4. Create a virtual environment (you need a recent version of Python installed):
 
-**Note**: The following commands work for Windows.
-**Note**: If you use Linux, make sure to run the correct commands accordingly.
+- The following commands work for Windows.
+- If you use Linux, make sure to run the correct commands accordingly.
 
 ```sh
 py -m venv env
@@ -55,7 +55,7 @@ pip install -r requirements.txt
 
 7. Set your AWS credentials for Amazon Textract as environment variables.
 
-**Note:** For the program to work you need to use these names for the variables:
+- For the program to work you need to use these names for the variables:
 
 ```
 TEXTRACT_AWS_ACCESS_KEY_ID
@@ -73,17 +73,28 @@ TEXTRACT_AWS_REGION
 
 3. Move your checks in `pdf` format to the `unprocessed` folder.
 
-**Note**: Currently only supporting `pdf` format for your checks.
-**Note**: Make sure the check is in the first page of the pdf.
-**Note**: To get better results, make sure the checks are horizontally aligned and that all of its content is visible.
+- Currently only supporting `pdf` format for your checks.
+- Make sure the check is in the first page of the pdf.
+- To get better results, make sure the checks are horizontally aligned and that all of its content is visible.
+
+5. Navigate to the `src` folder:
+
+```sh
+cd checks-ocr
+cd src
+```
 
 4. Run the program with the following command:
 
 ```sh
-py checks-ocr/main.py
+py main.py
 ```
 
-5. Check the results in the created `data.xlsx` file. Click on the ID of each row to see the check and fix any mistake or bad formatting if you need to.
+5. Wait for the program to complete the processing
+
+**Note**: It takes around `8 seconds` to process a new check.
+
+6. Check the results in the created `data.xlsx` file. Click on the ID of each row to see the check and fix any mistake or bad formatting if you need to.
 
 ## Notes
 
