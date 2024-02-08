@@ -4,7 +4,7 @@
   <img src="fig/logo.png" width="150">
 </div>
 
-Software to do OCR/HTR in Checks.
+Software to extract key information from printed and handwritten text on bank checks, using object detection techniques and cloud ML services. The solution provides enhanced transparency by reporting confidence levels in the OCR results.
 
 Currently only supporting a subset of banks from Ecuador.
 
