@@ -140,3 +140,16 @@ make any call to Amazon Textract. This is useful in case you want to manually ad
 - Banco del Austro
 - BanEcuador
 - Produbanco
+
+## Direct Dependencies
+
+- `boto3`
+- `coverage`
+- `openpyxl`
+- `pandas`
+- `pillow`
+- `pymupdf`
+- `pytest`
+- `unidecode`
+
+For a comprehensive list that includes both direct and transitive dependencies, please refer to the `requirements.txt` file.
