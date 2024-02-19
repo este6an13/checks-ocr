@@ -1,4 +1,4 @@
-name: Checks OCR Pipeline
+name: Unit Tests
 
 on:
   push:
@@ -23,8 +23,3 @@ jobs:
     - name: Run tests with pytest
       run: |
         pytest test/unit/src
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4.0.1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        slug: este6an13/checks-ocr
