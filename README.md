@@ -2,9 +2,12 @@
 
 <div align="center">
   <img src="fig/logo.png" width="150">
-</div>
 
-Software to extract key information from printed and handwritten text on bank checks, using object detection techniques and cloud ML services. The solution provides enhanced transparency by reporting confidence levels in the OCR results.
+  Software to extract key information from printed and handwritten text on bank checks, using object detection techniques and cloud ML services. The solution provides enhanced transparency by reporting confidence levels in the OCR results.
+
+  [![codecov](https://codecov.io/gh/este6an13/checks-ocr/graph/badge.svg?token=3TE5I10NPT)](https://codecov.io/gh/este6an13/checks-ocr)
+
+</div>
 
 Currently only supporting a subset of banks from Ecuador.
 
