@@ -5,7 +5,7 @@ import fitz
 from PIL import Image
 
 
-def calculate_iou(box1, box2):
+def calculate_iou(box1: tuple[float], box2: tuple[float]) -> float:
     """
     Calculate Intersection over Union (IoU) between two bounding boxes.
 
@@ -34,8 +34,8 @@ def calculate_iou(box1, box2):
 
     return iou
 
-def pdf_to_img(pdf_path, folder, resolution=300):
-    file_path = os.path.join(folder, f"{pdf_path}")
+def pdf_to_img(file_name: str, folder: str, resolution: int = 300):
+    file_path = os.path.join(folder, file_name)
     file_handle = fitz.open(file_path)
 
     # Get the first page
@@ -55,8 +55,8 @@ def pdf_to_img(pdf_path, folder, resolution=300):
 
 
 def generate_id():
-  id = str(uuid.uuid4())
-  return id
+    id = str(uuid.uuid4())
+    return id
 
 def contains_number(s):
     """
