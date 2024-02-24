@@ -2,7 +2,7 @@ import pandas as pd
 from constants import BANK_CODES, BANK_NAMES, BOXES, COLUMNS_MAP, COLUMNS
 import textract
 import confidence
-import territories
+import data
 import handler
 import utils
 import extractor
@@ -11,19 +11,22 @@ import llm
 
 import argparse
 
-def main(llm_enabled=False):
+def main(llm_enabled=False, vectordb_updates=[], model_name="gpt-3.5-turbo-0125"):
 
   df = handler.load_data(file_path='../../data.xlsx', columns=COLUMNS)
 
+  data.setup_data()
+
   llm_client = None
   if llm_enabled:
-    llm_client = llm.LLMClient()
+    llm_client = llm.LLMClient(vectordb_updates, model_name)
 
   confidence_df = handler.load_data(file_path='confidence/confidence.xlsx', columns=COLUMNS)
   confidence_df = confidence.filter_confidence_df(confidence_df, df)
 
   unprocessed_filenames = handler.get_unprocessed_filenames(folder_path='../../unprocessed')
-  TERRITORIES = territories.load_territories('territories/territories.txt')
+  
+  TERRITORIES = data.load_territories()
 
   for pdf_filename in unprocessed_filenames:
 
@@ -31,9 +34,9 @@ def main(llm_enabled=False):
     id = utils.get_id(pdf_filename)
 
     processed = handler.check_if_processed(df, pdf_filename)
-    #if processed:
-    #  handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
-    #  continue
+    if processed:
+      handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
+      continue
 
     cached = cache.check_if_cached(pdf_filename, cache_folder='../cache')
     if cached:
@@ -54,7 +57,7 @@ def main(llm_enabled=False):
     if bank_code is None:
         continue
 
-    #handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
+    handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
 
     boxes = BOXES[bank_code]
 
@@ -100,13 +103,14 @@ def main(llm_enabled=False):
                 confidence_row['VALOR'] = -1
       else:
         confidence_row['FECHA'] = conf
-        if territories.is_in_territories(row['CIUDAD'], TERRITORIES):
+        if data.is_in_territories(row['CIUDAD'], TERRITORIES):
             conf = 99
         if utils.contains_number(row['CIUDAD']):
             conf = -1
         confidence_row['CIUDAD'] = conf
 
     df = pd.concat([df, pd.DataFrame([row], columns=df.columns)], ignore_index=True)
+    print(row)
     confidence_df = pd.concat([confidence_df, pd.DataFrame([confidence_row], columns=df.columns)], ignore_index=True)
 
   handler.write_data(df, confidence_df, data_path='../../data.xlsx', images_path='checks-ocr/images')
@@ -115,9 +119,23 @@ def main(llm_enabled=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--llm", action="store_true", help="Enable the llm feature")
+    parser.add_argument('--update', action='append', help='Specify files to update')
+    parser.add_argument('--model-name', type=str, help='Specify the model name')
     args = parser.parse_args()
     if args.llm:
-        print("LLM feature enabled!")
-        main(llm_enabled=True)
-    else:
-        main()
+        print("- LLM feature enabled!")
+        # if not llm, these arguments will be received but not used
+        if args.update:
+          for vector_db in args.update:
+              print(f"- '{vector_db}' vector database will be updated.")
+        if args.model_name:
+            print(f"- Using '{args.model_name}' model.")
+        else:
+            print(f"- Using default 'gpt-3.5-turbo-0125' model.")
+
+    main(
+        llm_enabled=args.llm, 
+        vectordb_updates=args.update if args.update else [],
+        model_name=args.model_name if args.model_name else "gpt-3.5-turbo-0125",
+    )
+
