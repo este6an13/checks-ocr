@@ -7,11 +7,18 @@ import handler
 import utils
 import extractor
 import cache
+import llm
 
+import argparse
 
-def main():
+def main(llm_enabled=False):
 
   df = handler.load_data(file_path='../../data.xlsx', columns=COLUMNS)
+
+  llm_client = None
+  if llm_enabled:
+    llm_client = llm.LLMClient()
+
   confidence_df = handler.load_data(file_path='confidence/confidence.xlsx', columns=COLUMNS)
   confidence_df = confidence.filter_confidence_df(confidence_df, df)
 
@@ -24,9 +31,9 @@ def main():
     id = utils.get_id(pdf_filename)
 
     processed = handler.check_if_processed(df, pdf_filename)
-    if processed:
-      handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
-      continue
+    #if processed:
+    #  handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
+    #  continue
 
     cached = cache.check_if_cached(pdf_filename, cache_folder='../cache')
     if cached:
@@ -47,7 +54,7 @@ def main():
     if bank_code is None:
         continue
 
-    handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
+    #handler.move_file(pdf_filename, id, source_folder='../../unprocessed', destination_folder='../../processed')
 
     boxes = BOXES[bank_code]
 
@@ -65,12 +72,16 @@ def main():
         row[COLUMNS_MAP[box_name]] = str(extractor.extract_numbers(text))
       if box_name == 'AMOUNT':
         row[COLUMNS_MAP[box_name]] = extractor.extract_float_numbers(text)
-      if box_name in ['ACCOUNT_NAME', 'CLIENT_NAME']:
-        row[COLUMNS_MAP[box_name]] = extractor.clean_and_uppercase(text)
+      if box_name in ['ACCOUNT_NAME']:
+        account_name = extractor.clean_and_uppercase(text)
+        row[COLUMNS_MAP[box_name]] = llm_client.rag.query("ACCOUNT_NAME", id, account_name) if llm_client else account_name
+      if box_name in ['CLIENT_NAME']:
+        client_name = extractor.clean_and_uppercase(text)
+        row[COLUMNS_MAP[box_name]] = llm_client.rag.query("CLIENT_NAME", id, client_name) if llm_client else client_name
       if box_name == 'PLACE_AND_DATE':
         date, city = extractor.get_city_and_date(text)
-        row['FECHA'] = date
-        row['CIUDAD'] = city
+        row['FECHA'] = llm_client.rag.query("DATE", id, text) if llm_client else date
+        row['CIUDAD'] = llm_client.rag.query("CITY", id, city) if llm_client else city
 
       # Confidences Assignment
       if box_name != 'PLACE_AND_DATE':
@@ -102,4 +113,11 @@ def main():
   handler.write_confidence(confidence_df, filename='confidence/confidence.xlsx')
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--llm", action="store_true", help="Enable the llm feature")
+    args = parser.parse_args()
+    if args.llm:
+        print("LLM feature enabled!")
+        main(llm_enabled=True)
+    else:
+        main()
