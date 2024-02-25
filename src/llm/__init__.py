@@ -23,7 +23,9 @@ class LLMCache:
             with open(self.cache_file_path, "r") as file:
                 cache_data = json.load(file)
         except FileNotFoundError:
-            # If the file doesn't exist, create an empty dictionary
+            # If the file doesn't exist, create the directory
+            os.makedirs(os.path.dirname(self.cache_file_path), exist_ok=True)
+            # Then create an empty dictionary
             cache_data = {}
 
         # Check if the id already exists in the cache
