@@ -118,9 +118,9 @@ class RAG:
 
     def load_documents(self, name):
         paths = {
-            "territories":'data/territories.txt',
-            "client_names":'data/client_names.txt',
-            "account_names":'data/account_names.txt',
+            "territories":'data/data/territories.txt',
+            "client_names":'data/data/client_names.txt',
+            "account_names":'data/data/account_names.txt',
         }
         loader = TextLoader(paths[name])
         documents = loader.load()
