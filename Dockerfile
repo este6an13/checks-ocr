@@ -21,5 +21,17 @@ RUN pip install -r requirements.txt
 # Move to src folder
 WORKDIR /checks/checks-ocr/src
 
+RUN --mount=type=secret,id=TEXTRACT_AWS_ACCESS_KEY_ID \
+    TEXTRACT_AWS_ACCESS_KEY_ID=$TEXTRACT_AWS_ACCESS_KEY_ID
+
+RUN --mount=type=secret,id=TEXTRACT_AWS_REGION \
+    TEXTRACT_AWS_REGION=$TEXTRACT_AWS_REGION
+
+RUN --mount=type=secret,id=TEXTRACT_AWS_SECRET_ACCESS_KEY_ID \
+    TEXTRACT_AWS_SECRET_ACCESS_KEY_ID=$TEXTRACT_AWS_SECRET_ACCESS_KEY_ID
+
+RUN --mount=type=secret,id=OPENAI_API_KEY \
+    OPENAI_API_KEY=$OPENAI_API_KEY
+
 # Start the application
 CMD ["python3", "main.py"]
