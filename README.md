@@ -145,6 +145,9 @@ make any call to Amazon Textract. This is useful in case you want to manually ad
 
 - `boto3`
 - `coverage`
+- `chromadb`
+- `langchain`
+- `langchain-openai`
 - `openpyxl`
 - `pandas`
 - `pillow`

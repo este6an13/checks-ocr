@@ -1,16 +1,16 @@
 import os
 import json
-from langchain_community.document_loaders import TextLoader
+import shutil
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
 from langchain.docstore.document import Document
+from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import FakeEmbeddings
-import shutil
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
 
 
 class LLMCache:
