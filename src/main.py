@@ -2,21 +2,31 @@ import pandas as pd
 from constants import BANK_CODES, BANK_NAMES, BOXES, COLUMNS_MAP, COLUMNS
 import textract
 import confidence
-import territories
+import data
 import handler
 import utils
 import extractor
 import cache
+import llm
 
+import argparse
 
-def main():
+def main(llm_enabled=False, vectordb_updates=[], model_name="gpt-3.5-turbo-0125"):
 
   df = handler.load_data(file_path='../../data.xlsx', columns=COLUMNS)
+
+  data.setup_data()
+
+  llm_client = None
+  if llm_enabled:
+    llm_client = llm.LLMClient(vectordb_updates, model_name)
+
   confidence_df = handler.load_data(file_path='confidence/confidence.xlsx', columns=COLUMNS)
   confidence_df = confidence.filter_confidence_df(confidence_df, df)
 
   unprocessed_filenames = handler.get_unprocessed_filenames(folder_path='../../unprocessed')
-  TERRITORIES = territories.load_territories('territories/territories.txt')
+  
+  TERRITORIES = data.load_territories()
 
   for pdf_filename in unprocessed_filenames:
 
@@ -65,12 +75,16 @@ def main():
         row[COLUMNS_MAP[box_name]] = str(extractor.extract_numbers(text))
       if box_name == 'AMOUNT':
         row[COLUMNS_MAP[box_name]] = extractor.extract_float_numbers(text)
-      if box_name in ['ACCOUNT_NAME', 'CLIENT_NAME']:
-        row[COLUMNS_MAP[box_name]] = extractor.clean_and_uppercase(text)
+      if box_name in ['ACCOUNT_NAME']:
+        account_name = extractor.clean_and_uppercase(text)
+        row[COLUMNS_MAP[box_name]] = llm_client.rag.query("ACCOUNT_NAME", id, account_name) if llm_client else account_name
+      if box_name in ['CLIENT_NAME']:
+        client_name = extractor.clean_and_uppercase(text)
+        row[COLUMNS_MAP[box_name]] = llm_client.rag.query("CLIENT_NAME", id, client_name) if llm_client else client_name
       if box_name == 'PLACE_AND_DATE':
         date, city = extractor.get_city_and_date(text)
-        row['FECHA'] = date
-        row['CIUDAD'] = city
+        row['FECHA'] = llm_client.rag.query("DATE", id, text) if llm_client else date
+        row['CIUDAD'] = llm_client.rag.query("CITY", id, city) if llm_client else city
 
       # Confidences Assignment
       if box_name != 'PLACE_AND_DATE':
@@ -89,17 +103,39 @@ def main():
                 confidence_row['VALOR'] = -1
       else:
         confidence_row['FECHA'] = conf
-        if territories.is_in_territories(row['CIUDAD'], TERRITORIES):
+        if data.is_in_territories(row['CIUDAD'], TERRITORIES):
             conf = 99
         if utils.contains_number(row['CIUDAD']):
             conf = -1
         confidence_row['CIUDAD'] = conf
 
     df = pd.concat([df, pd.DataFrame([row], columns=df.columns)], ignore_index=True)
+    print(row)
     confidence_df = pd.concat([confidence_df, pd.DataFrame([confidence_row], columns=df.columns)], ignore_index=True)
 
   handler.write_data(df, confidence_df, data_path='../../data.xlsx', images_path='checks-ocr/images')
   handler.write_confidence(confidence_df, filename='confidence/confidence.xlsx')
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--llm", action="store_true", help="Enable the llm feature")
+    parser.add_argument('--update', action='append', help='Specify files to update')
+    parser.add_argument('--model-name', type=str, help='Specify the model name')
+    args = parser.parse_args()
+    if args.llm:
+        print("- LLM feature enabled!")
+        # if not llm, these arguments will be received but not used
+        if args.update:
+          for vector_db in args.update:
+              print(f"- '{vector_db}' vector database will be updated.")
+        if args.model_name:
+            print(f"- Using '{args.model_name}' model.")
+        else:
+            print(f"- Using default 'gpt-3.5-turbo-0125' model.")
+
+    main(
+        llm_enabled=args.llm, 
+        vectordb_updates=args.update if args.update else [],
+        model_name=args.model_name if args.model_name else "gpt-3.5-turbo-0125",
+    )
+

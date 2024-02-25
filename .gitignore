@@ -1,6 +1,10 @@
 images/
 /cache/
 confidence.xlsx
+cache.json
+vectordb
+client_names.txt
+account_names.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
