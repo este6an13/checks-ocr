@@ -21,7 +21,7 @@ It's important to note that the current annotations specifically cover a subset 
 ## Prerequisites
 
 - Docker installed in your system
-- AWS Credentials for Amazon Textract
+- AWS Credentials for `Amazon Textract`
 - OPENAI Credentials if you want to use the LLM feature
 
 If you don't have Docker installed, you would need:
@@ -43,7 +43,7 @@ If you don't have Docker installed, you would need:
 git clone https://github.com/este6an13/checks-ocr.git
 ```
 
-6. Set your AWS credentials for Amazon Textract as environment variables.
+6. Set your AWS credentials for `Amazon Textract` as environment variables.
 
 For the program to work you need to use these names for the variables:
 
@@ -58,9 +58,6 @@ If you want to use the LLM feature, add your OpenAI credentials as well. For the
 ```
 OPENAI_API_KEY
 ```
-
->[!WARNING]
->When using Docker, the `docker run` command passes your credentials, and they will be visible to any user who can inspect your container. This will be addressed in a future release.
 
 If you don't have Docker installed in your system, follow these extra steps:
 
@@ -108,6 +105,9 @@ If you have Docker installed in your system:
 ```sh
 bash checks-ocr/build.sh
 ```
+
+>[!WARNING]
+>Be careful not to share this image, as it will contain the `Amazon Textract` and `OpenAI` credentials you’ve set! This will be addressed in a future release.
 
 3. Start the application by running the following script from the `checks` folder:
 
@@ -180,10 +180,10 @@ Check the results in the created `data.xlsx` file. Click on the ID of each row t
 
 - If you move the images from that folder, you won't be able to see them from the `data.xlsx` file when clicking their `ID`.
 
-- The cache folder stores the responses received from Amazon Textract, so if you move a check to the `unprocessed` folder and removes its row from the `data.xlsx` folder, it will re-process the image but won't
-make any call to Amazon Textract. This is useful in case you want to manually adjust the `BOXES` of a given bank in `checks-ocr/src/constants/__init__.py` file if you need it, and re-run the processing for a given set of checks.
+- The cache folder stores the responses received from `Amazon Textract`, so if you move a check to the `unprocessed` folder and removes its row from the `data.xlsx` folder, it will re-process the image but won't
+make any call to `Amazon Textract`. This is useful in case you want to manually adjust the `BOXES` of a given bank in `checks-ocr/src/constants/__init__.py` file if you need it, and re-run the processing for a given set of checks.
 
-- The generated `data.xlsx` file cells are painted based on the confidence reported by Amazon Textract. Cells in red color indicated a confidence lower than `90`. Violet cells are cells that seem to have some inconsistencies in their content suggesting that the `BOXES` coordinates seemed to not haven't captured the contents precisely. This happens when the checks details are not in the place they use to be or they cross with other details in the check.
+- The generated `data.xlsx` file cells are painted based on the confidence reported by `Amazon Textract`. Cells in red color indicated a confidence lower than `90`. Violet cells are cells that seem to have some inconsistencies in their content suggesting that the `BOXES` coordinates seemed to not haven't captured the contents precisely. This happens when the checks details are not in the place they use to be or they cross with other details in the check.
 
 - You can update the context that the LLM uses to generate results by adding and updating the `client_names.txt`, `account_names.txt`, and `territories.txt` files located in the `checks-ocr/data/data` folder. This way, users have complete control over the context used by the program and can make updates as needed. To apply these changes to the internal vector databases, run the program with the `--update` option, as explained earlier. You only need to do this once after making any changes to the files.
 
