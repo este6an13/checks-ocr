@@ -34,7 +34,8 @@ def calculate_iou(box1: tuple[float], box2: tuple[float]) -> float:
 
     return iou
 
-def pdf_to_img(file_name: str, folder: str, resolution: int = 300):
+
+def pdf_to_img(file_name: str, folder: str, resolution: int = 300) -> Image:
     file_path = os.path.join(folder, file_name)
     file_handle = fitz.open(file_path)
 
@@ -54,11 +55,12 @@ def pdf_to_img(file_name: str, folder: str, resolution: int = 300):
     return img
 
 
-def generate_id():
+def generate_id() -> str:
     id = str(uuid.uuid4())
     return id
 
-def contains_number(s):
+
+def contains_number(s: str) -> bool:
     """
     Check if a string contains a number.
 
@@ -67,7 +69,8 @@ def contains_number(s):
     """
     return bool(re.search(r'\d', s))
 
-def get_id(filename):
+
+def get_id(filename: str) -> str:
     """
     Extract the ID from a filename (without the extension).
 
