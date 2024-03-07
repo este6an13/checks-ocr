@@ -94,10 +94,8 @@ def test_generate_id() -> None:
     assert isinstance(result, str)
 
     # Check if the generated ID is a valid UUID
-    try:
-        uuid.UUID(result, version=4)
-    except ValueError:
-        assert False, "Generated ID is not a valid UUID"
+    uuid.UUID(result, version=4)
+    assert True
 
 
 @pytest.mark.parametrize(
