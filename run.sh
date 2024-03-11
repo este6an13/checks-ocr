@@ -39,6 +39,8 @@ done
 
 # Docker run command with parsed arguments
 sudo docker run \
+    --name "checks-ocr" \
+    --rm \
     -v .:/checks \
     -v /checks-ocr/images:/checks-ocr/images \
     -v /data/checks-ocr-vectordb:/checks-ocr/src/llm/vectordb \

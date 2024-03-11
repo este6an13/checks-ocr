@@ -60,7 +60,7 @@ OPENAI_API_KEY
 ```
 
 >[!WARNING]
->When using Docker, the `docker run` command passes your credentials, and they will be visible to any user who can inspect your container. This will be addressed in a future release.
+>If someone can inspect your container while it's running, they will be able to see your secrets. The container is automatically removed after it finishes running in an attempt to mitigate this risk.
 
 If you don't have Docker installed in your system, follow these extra steps:
 
@@ -112,7 +112,7 @@ bash checks-ocr/build.sh
 3. Start the application by running the following script from the `checks` folder:
 
 ```sh
-bash checks-ocr/run.sh 
+bash checks-ocr/run.sh
 ```
 
 To use the LLM feature add the `--llm` option when running the script:
@@ -139,7 +139,7 @@ bash checks-ocr/run.sh --llm --model-name gpt-4-0125-preview
 
 The program will use the `gpt-3.5-turbo-0125` model by default.
 
-> [!NOTE]  
+> [!NOTE]
 > Without the `--llm` option, the `--update` and `--model-name` options won't take effect.
 
 If you don't have Docker installed in your system, follow steps 4 and 5:
@@ -167,7 +167,7 @@ Note the equal symbol between the option and its value.
 
 After starting the program, wait for the program to complete the processing
 
-> [!NOTE]  
+> [!NOTE]
 >It takes around `8 seconds` to process a new check. If using the LLM feature, it may take `10 seconds` per new check.
 
 Check the results in the created `data.xlsx` file. Click on the ID of each row to see the check and fix any mistake or bad formatting if you need to.
