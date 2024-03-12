@@ -24,7 +24,9 @@ def calculate_iou(box1: tuple[float], box2: tuple[float]) -> float:
     intersection_bottom = min(t1 + h1, t2 + h2)
 
     # Calculate area of intersection
-    intersection_area = max(0, intersection_right - intersection_left) * max(0, intersection_bottom - intersection_top)
+    intersection_area = max(0, intersection_right - intersection_left) * max(
+        0, intersection_bottom - intersection_top
+    )
 
     # Calculate area of union
     union_area = w1 * h1 + w2 * h2 - intersection_area
@@ -43,7 +45,9 @@ def pdf_to_img(file_name: str, folder: str, resolution: int = 300) -> Image:
     page = file_handle[0]
 
     # Set resolution (DPI) for the image
-    zoom_factor = resolution / 72.0  # 72 DPI is the default resolution in get_pixmap
+    zoom_factor = (
+        resolution / 72.0
+    )  # 72 DPI is the default resolution in get_pixmap
     matrix = fitz.Matrix(zoom_factor, zoom_factor)
 
     # Get the pixmap of the page with higher resolution
@@ -67,7 +71,7 @@ def contains_number(s: str) -> bool:
     :param s: The input string.
     :return: True if the string contains a number, False otherwise.
     """
-    return bool(re.search(r'\d', s))
+    return bool(re.search(r"\d", s))
 
 
 def get_id(filename: str) -> str:

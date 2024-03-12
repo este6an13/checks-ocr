@@ -1,12 +1,14 @@
 import os
 
-def load_territories(file_path='data/data/territories.txt'):
+
+def load_territories(file_path="data/data/territories.txt"):
     words_list = []
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         for line in file:
             word = line.strip()
             words_list.append(word)
     return words_list
+
 
 def is_in_territories(city, TERRITORIES):
     words = city.split()
@@ -14,6 +16,7 @@ def is_in_territories(city, TERRITORIES):
     if all([w in TERRITORIES for w in words]):
         return True
     return False
+
 
 def setup_data():
     # Define the file paths
@@ -25,13 +28,13 @@ def setup_data():
     os.makedirs("data", exist_ok=True)
 
     # Create the 'territories.txt' file if it doesn't exist
-    with open(territories_file, 'a'):
+    with open(territories_file, "a"):
         os.utime(territories_file, None)
 
     # Create the 'client_names.txt' file if it doesn't exist
-    with open(client_names_file, 'a'):
+    with open(client_names_file, "a"):
         os.utime(client_names_file, None)
 
     # Create the 'account_names.txt' file if it doesn't exist
-    with open(account_names_file, 'a'):
+    with open(account_names_file, "a"):
         os.utime(account_names_file, None)
