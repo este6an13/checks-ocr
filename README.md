@@ -210,6 +210,7 @@ make any call to Amazon Textract. This is useful in case you want to manually ad
 - `openpyxl`
 - `pandas`
 - `pillow`
+- `pyarrow`
 - `pymupdf`
 - `pytest`
 - `unidecode`
