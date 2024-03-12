@@ -12,19 +12,30 @@ import pytest
 import shutil
 import uuid
 
+
 @pytest.mark.parametrize(
     ("box1", "box2", "expected"),
     [
-        ((0.1, 0.1, 0.5, 0.5), (0.1, 0.1, 0.5, 0.5), 1.0,),
-        ((0.1, 0.1, 0.0, 0.0), (0.1, 0.1, 0.5, 0.5), 0.0,),
-        ((0.2, 0.2, 0.0, 0.0), (0.2, 0.2, 0.1, 0.0), 1/3,),
+        (
+            (0.1, 0.1, 0.5, 0.5),
+            (0.1, 0.1, 0.5, 0.5),
+            1.0,
+        ),
+        (
+            (0.1, 0.1, 0.0, 0.0),
+            (0.1, 0.1, 0.5, 0.5),
+            0.0,
+        ),
+        (
+            (0.2, 0.2, 0.0, 0.0),
+            (0.2, 0.2, 0.1, 0.0),
+            1 / 3,
+        ),
     ],
 )
 def test_calculate_iou(
-        box1: tuple[float],
-        box2: tuple[float],
-        expected: float
-    ) -> None:
+    box1: tuple[float], box2: tuple[float], expected: float
+) -> None:
     iou = calculate_iou(box1, box2)
     assert iou >= 0 and iou <= 1
     assert pytest.approx(iou) == expected
@@ -44,11 +55,11 @@ def _create_sample_pdf(pdf_path: str) -> None:
     ],
 )
 def test_pdf_to_img(
-        resolution: int,
-        expected_width: int,
-        expected_height: int,
-        expected_format: str
-    ) -> None:
+    resolution: int,
+    expected_width: int,
+    expected_height: int,
+    expected_format: str,
+) -> None:
     folder = r"./test/unit/temp/"
 
     # Create the output folder if it doesn't exist
@@ -66,7 +77,10 @@ def test_pdf_to_img(
     assert isinstance(img, Image.Image)
 
     # Check image dimensions
-    assert pytest.approx(img.size, rel=1.0) == (expected_width, expected_height)
+    assert pytest.approx(img.size, rel=1.0) == (
+        expected_width,
+        expected_height,
+    )
 
     # Check image format
     assert img.mode == expected_format
@@ -107,7 +121,7 @@ def test_generate_id() -> None:
         ("file_without_extension", "file_without_extension"),
         ("/path/to/your/file/document.txt", "document"),
         (" spaced_filename.txt ", " spaced_filename"),
-        ("", "")
+        ("", ""),
     ],
 )
 def test_get_id(filename: str, expected: str) -> None:

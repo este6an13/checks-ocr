@@ -58,45 +58,99 @@ class LLMCache:
         except FileNotFoundError:
             return None  # Cache file doesn't exist
 
+
 class RAG:
-    def __init__(self, api_key, vectordb_updates, model_name="gpt-3.5-turbo-0125"):
+    def __init__(
+        self, api_key, vectordb_updates, model_name="gpt-3.5-turbo-0125"
+    ):
         self.api_key = api_key
         self.embedding_function = OpenAIEmbeddings(api_key=self.api_key)
         self.clean_vector_databases(vectordb_updates)
-        self.vector_db_territories = self.setup_vector_database(name="territories")
-        self.vector_db_client_names = self.setup_vector_database(name="client_names")
-        self.vector_db_account_names = self.setup_vector_database(name="account_names")
-        self.vector_db_territories_retriever = self.get_retriever(self.vector_db_territories, k=1) # there's only 1 doc
-        self.vector_db_client_names_retriever = self.get_retriever(self.vector_db_client_names, k=1) 
-        self.vector_db_account_names_retriever = self.get_retriever(self.vector_db_account_names, k=1) 
+        self.vector_db_territories = self.setup_vector_database(
+            name="territories"
+        )
+        self.vector_db_client_names = self.setup_vector_database(
+            name="client_names"
+        )
+        self.vector_db_account_names = self.setup_vector_database(
+            name="account_names"
+        )
+        self.vector_db_territories_retriever = self.get_retriever(
+            self.vector_db_territories, k=1
+        )  # there's only 1 doc
+        self.vector_db_client_names_retriever = self.get_retriever(
+            self.vector_db_client_names, k=1
+        )
+        self.vector_db_account_names_retriever = self.get_retriever(
+            self.vector_db_account_names, k=1
+        )
         self.prompts = {
             "CITY": self.generate_prompt(
                 messages=[
-                    ("system", "You are a machine that prints city names and nothing more."),
-                    ("human", "If this text contains the name of an Ecuadorian city, print it; otherwise, print 'None'."),
-                    ("human", "The city may be misspelled. Use the context to find the potential correction and print it."),
+                    (
+                        "system",
+                        "You are a machine that prints city names and nothing more.",
+                    ),
+                    (
+                        "human",
+                        "If this text contains the name of an Ecuadorian city, print it; otherwise, print 'None'.",
+                    ),
+                    (
+                        "human",
+                        "The city may be misspelled. Use the context to find the potential correction and print it.",
+                    ),
                     ("human", "Text: {text}"),
                     ("human", "Context: {context}"),
                 ],
             ),
             "DATE": self.generate_prompt(
                 messages=[
-                    ("system", "You are a machine that prints dates in YYYY-MM-DD format and nothing more."),
-                    ("human", "If this text contains a date, print it in YYYY-MM-DD format; otherwise, print 'None'."),
+                    (
+                        "system",
+                        "You are a machine that prints dates in YYYY-MM-DD format and nothing more.",
+                    ),
+                    (
+                        "human",
+                        "If this text contains a date, print it in YYYY-MM-DD format; otherwise, print 'None'.",
+                    ),
                     ("human", "Text: {text}"),
                 ],
             ),
             "CLIENT_NAME": self.generate_prompt(
                 messages=[
-                    ("system", "You are a machine that prints client full names and nothing more."),
-                    ("human", "This text should contain the full name of a client to whom a check is being paid."),
-                    ("human", "The client name can be the name of an organization."),
-                    ("human", "The client name can include a first name, middle name, and two surnames, but not always."),
-                    ("human", "These names are Ecuadorian and/or Latin American and they are usually in Spanish."),
+                    (
+                        "system",
+                        "You are a machine that prints client full names and nothing more.",
+                    ),
+                    (
+                        "human",
+                        "This text should contain the full name of a client to whom a check is being paid.",
+                    ),
+                    (
+                        "human",
+                        "The client name can be the name of an organization.",
+                    ),
+                    (
+                        "human",
+                        "The client name can include a first name, middle name, and two surnames, but not always.",
+                    ),
+                    (
+                        "human",
+                        "These names are Ecuadorian and/or Latin American and they are usually in Spanish.",
+                    ),
                     ("human", "The client name may be misspelled."),
-                    ("human", "You will be given a context that has some of our clients names to help you."),
-                    ("human", "Use this context to find the potential correction and print it."),
-                    ("human", "If you don't find a potential correction in the context, print the client name as it is."),
+                    (
+                        "human",
+                        "You will be given a context that has some of our clients names to help you.",
+                    ),
+                    (
+                        "human",
+                        "Use this context to find the potential correction and print it.",
+                    ),
+                    (
+                        "human",
+                        "If you don't find a potential correction in the context, print the client name as it is.",
+                    ),
                     ("human", "If the text is a number, print 'None'."),
                     ("human", "Text: {text}"),
                     ("human", "Context: {context}"),
@@ -104,25 +158,40 @@ class RAG:
             ),
             "ACCOUNT_NAME": self.generate_prompt(
                 messages=[
-                    ("system", "You are a machine that prints account names and nothing more."),
-                    ("human", "This text should contain the full name of an account/client/organization to whom a check is being paid."),
-                    ("human", "You will be given a context that has some of our clients account names to help you."),
-                    ("human", "Use this context to find the potential correction and print it."),
-                    ("human", "If you don't find a potential correction in the context, print the account name as it is."),
+                    (
+                        "system",
+                        "You are a machine that prints account names and nothing more.",
+                    ),
+                    (
+                        "human",
+                        "This text should contain the full name of an account/client/organization to whom a check is being paid.",
+                    ),
+                    (
+                        "human",
+                        "You will be given a context that has some of our clients account names to help you.",
+                    ),
+                    (
+                        "human",
+                        "Use this context to find the potential correction and print it.",
+                    ),
+                    (
+                        "human",
+                        "If you don't find a potential correction in the context, print the account name as it is.",
+                    ),
                     ("human", "If the text is a number, print 'None'."),
                     ("human", "Text: {text}"),
                     ("human", "Context: {context}"),
                 ],
-            )
+            ),
         }
         self.llm = self.setup_llm(model_name=model_name)
         self.llm_cache = LLMCache()
 
     def load_documents(self, name):
         paths = {
-            "territories":'data/data/territories.txt',
-            "client_names":'data/data/client_names.txt',
-            "account_names":'data/data/account_names.txt',
+            "territories": "data/data/territories.txt",
+            "client_names": "data/data/client_names.txt",
+            "account_names": "data/data/account_names.txt",
         }
         loader = TextLoader(paths[name])
         documents = loader.load()
@@ -156,12 +225,12 @@ class RAG:
             vector_db = Chroma.from_documents(
                 documents=chunked_documents,
                 embedding=self.embedding_function,
-                persist_directory=vector_db_path
+                persist_directory=vector_db_path,
             )
             vector_db.persist()
         else:
             vector_db = Chroma(
-                persist_directory=vector_db_path, 
+                persist_directory=vector_db_path,
                 embedding_function=self.embedding_function,
             )
         return vector_db
@@ -174,7 +243,11 @@ class RAG:
         return prompt
 
     def setup_llm(self, model_name="gpt-3.5-turbo-0125", temperature=0):
-        llm = ChatOpenAI(api_key=self.api_key, model_name=model_name, temperature=temperature)
+        llm = ChatOpenAI(
+            api_key=self.api_key,
+            model_name=model_name,
+            temperature=temperature,
+        )
         return llm
 
     def setup_rag_chain(self, retriever, prompt, llm):
@@ -185,7 +258,7 @@ class RAG:
             | StrOutputParser()
         )
         return rag_chain
-    
+
     # DATE doesn't use context
     # Useful for testing
     def create_empty_vectorstore_retriever(self):
@@ -205,7 +278,7 @@ class RAG:
         rag_chain = self.setup_rag_chain(retrievers[key], prompt, self.llm)
         result = rag_chain.invoke(text.lower())
         return "" if result == "None" else result.upper()
-    
+
     def query(self, key, id, text) -> str:
         res = self.llm_cache.read(id, key)
         if res is None:
@@ -215,9 +288,13 @@ class RAG:
             )
             self.llm_cache.write(id, key, res)
         return res
-    
+
 
 class LLMClient:
     def __init__(self, vectordb_updates, model_name="gpt-3.5-turbo-0125"):
         self.api_key = os.environ["OPENAI_API_KEY"]
-        self.rag = RAG(api_key=self.api_key, vectordb_updates=vectordb_updates, model_name=model_name)
+        self.rag = RAG(
+            api_key=self.api_key,
+            vectordb_updates=vectordb_updates,
+            model_name=model_name,
+        )

@@ -2,6 +2,7 @@ import os
 import json
 from utils import get_id
 
+
 def check_if_cached(filename, cache_folder):
     """
     Check if a file with the same name (without extension) exists in the cache folder.
@@ -25,7 +26,7 @@ def check_if_cached(filename, cache_folder):
     except Exception as e:
         print(f"Error: Unable to check cache for file. {e}")
         return False
-    
+
 
 def read_cache(filename, cache_folder):
     """
@@ -44,7 +45,7 @@ def read_cache(filename, cache_folder):
 
         if os.path.exists(cache_file_path):
             # Load JSON data from the file
-            with open(cache_file_path, 'r') as json_file:
+            with open(cache_file_path, "r") as json_file:
                 data = json.load(json_file)
             return data
         else:
@@ -72,7 +73,7 @@ def write_to_cache(res, id, cache_folder):
         cache_file_path = os.path.join(cache_folder, f"{id}.json")
 
         # Write JSON data to the cache file
-        with open(cache_file_path, 'w') as json_file:
+        with open(cache_file_path, "w") as json_file:
             json.dump(res, json_file, indent=2)
 
         return True

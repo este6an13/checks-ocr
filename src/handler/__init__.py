@@ -20,18 +20,18 @@ def save_image(img, id, images_folder):
         os.makedirs(images_folder, exist_ok=True)
 
         # Generate a unique filename using uuid
-        filename = os.path.join(images_folder, id + '.png')
+        filename = os.path.join(images_folder, id + ".png")
 
         # Save the image as PNG
-        img.save(filename, format='PNG')
+        img.save(filename, format="PNG")
 
         return filename
     except Exception as e:
         print(f"Error saving image: {e}")
         return None
-    
 
-def load_data(file_path='../../data.xlsx', sheet_name=0, columns=None):
+
+def load_data(file_path="../../data.xlsx", sheet_name=0, columns=None):
     """
     Read an Excel file and load it into a pandas DataFrame.
     If the file doesn't exist, it will be created.
@@ -54,7 +54,7 @@ def load_data(file_path='../../data.xlsx', sheet_name=0, columns=None):
         print(f"Error: Unable to read Excel file. {e}")
         return None
 
-    
+
 def get_unprocessed_filenames(folder_path):
     """
     Get the names of all PDF files in a specified folder.
@@ -77,7 +77,6 @@ def get_unprocessed_filenames(folder_path):
         return None
 
 
-
 def check_if_processed(df, filename):
     """
     Check if a filename (without the .pdf extension) is in the 'ID' column of the DataFrame.
@@ -91,10 +90,11 @@ def check_if_processed(df, filename):
         id = get_id(filename)
 
         # Check if the filename is in the 'ID' column
-        return id in df['ID'].values
+        return id in df["ID"].values
     except Exception as e:
         print(f"Error: Unable to check if processed. {e}")
         return False
+
 
 def move_file(filename, id, source_folder, destination_folder):
     """
@@ -111,7 +111,7 @@ def move_file(filename, id, source_folder, destination_folder):
 
         # Construct paths for source and destination
         source_path = os.path.join(source_folder, filename)
-        destination_path = os.path.join(destination_folder, f'{id}.pdf')
+        destination_path = os.path.join(destination_folder, f"{id}.pdf")
 
         # Move the file
         shutil.move(source_path, destination_path)
@@ -122,7 +122,7 @@ def move_file(filename, id, source_folder, destination_folder):
         return False
 
 
-def write_confidence(df, filename, sheet_name='data'):
+def write_confidence(df, filename, sheet_name="data"):
     """
     Write a DataFrame to an Excel file.
 
@@ -140,48 +140,66 @@ def write_confidence(df, filename, sheet_name='data'):
         print(f"Error writing DataFrame to Excel: {e}")
         return False
 
+
 def write_data(df, confidence_df, data_path, images_path):
+    # Create a new Excel workbook and add the DataFrame to it
+    with pd.ExcelWriter(data_path, engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="data", index=False)
 
-  # Create a new Excel workbook and add the DataFrame to it
-  with pd.ExcelWriter(data_path, engine='openpyxl') as writer:
-      df.to_excel(writer, sheet_name='data', index=False)
+        # Access the worksheet
+        wb = writer.book
+        ws = wb["data"]
 
-      # Access the worksheet
-      wb = writer.book
-      ws = wb['data']
+        # Define fill styles for conditional formatting
+        colors = ["b0ffb1", "ddffb0", "fffab0", "f0bca8", "ffffff", "e9d7fc"]
+        fill_0 = PatternFill(
+            start_color=colors[0], end_color=colors[0], fill_type="solid"
+        )
+        fill_1 = PatternFill(
+            start_color=colors[1], end_color=colors[1], fill_type="solid"
+        )
+        fill_2 = PatternFill(
+            start_color=colors[2], end_color=colors[2], fill_type="solid"
+        )
+        fill_3 = PatternFill(
+            start_color=colors[3], end_color=colors[3], fill_type="solid"
+        )
+        fill_4 = PatternFill(
+            start_color=colors[4], end_color=colors[4], fill_type="solid"
+        )
+        fill_5 = PatternFill(
+            start_color=colors[5], end_color=colors[5], fill_type="solid"
+        )
 
-      # Define fill styles for conditional formatting
-      colors = ['b0ffb1', 'ddffb0', 'fffab0', 'f0bca8', 'ffffff', 'e9d7fc']
-      fill_0 = PatternFill(start_color=colors[0], end_color=colors[0], fill_type='solid')
-      fill_1 = PatternFill(start_color=colors[1], end_color=colors[1], fill_type='solid')
-      fill_2 = PatternFill(start_color=colors[2], end_color=colors[2], fill_type='solid')
-      fill_3 = PatternFill(start_color=colors[3], end_color=colors[3], fill_type='solid')
-      fill_4 = PatternFill(start_color=colors[4], end_color=colors[4], fill_type='solid')
-      fill_5 = PatternFill(start_color=colors[5], end_color=colors[5], fill_type='solid')
+        # Apply conditional formatting based on confidence_df values
+        for col in CONFIDENCE_COLUMNS:
+            col_index = df.columns.get_loc(
+                col
+            )  # Get column index (starting from 1)
+            for i, cell in enumerate(
+                ws["{}:{}".format(chr(65 + col_index), chr(65 + col_index))]
+            ):
+                if i == 0:  # Skip the header row
+                    continue
+                confidence_value = confidence_df.iloc[i - 1][col]
+                if confidence_value > 98:
+                    cell.fill = fill_0
+                elif confidence_value > 95:
+                    cell.fill = fill_1
+                elif confidence_value > 90:
+                    cell.fill = fill_2
+                elif confidence_value > 0:
+                    cell.fill = fill_3
+                elif confidence_value == 0:  # not used
+                    cell.fill = fill_4
+                else:
+                    cell.fill = fill_5
 
-      # Apply conditional formatting based on confidence_df values
-      for col in CONFIDENCE_COLUMNS:
-          col_index = df.columns.get_loc(col)  # Get column index (starting from 1)
-          for i, cell in enumerate(ws['{}:{}'.format(chr(65 + col_index), chr(65 + col_index))]):
-              if i == 0:  # Skip the header row
-                  continue
-              confidence_value = confidence_df.iloc[i - 1][col]
-              if confidence_value > 98:
-                  cell.fill = fill_0
-              elif confidence_value > 95:
-                  cell.fill = fill_1
-              elif confidence_value > 90:
-                  cell.fill = fill_2
-              elif confidence_value > 0:
-                cell.fill = fill_3
-              elif confidence_value == 0: # not used
-                cell.fill = fill_4
-              else:
-                cell.fill = fill_5
-
-      # Add hyperlinks to the 'ID' column
-      id_col_index = df.columns.get_loc('ID') + 1
-      for row in ws.iter_rows(min_col=id_col_index, max_col=id_col_index, min_row=2):
-        cell = row[0]
-        image_path = f"{images_path}/{cell.value}.png"
-        cell.hyperlink = image_path
+        # Add hyperlinks to the 'ID' column
+        id_col_index = df.columns.get_loc("ID") + 1
+        for row in ws.iter_rows(
+            min_col=id_col_index, max_col=id_col_index, min_row=2
+        ):
+            cell = row[0]
+            image_path = f"{images_path}/{cell.value}.png"
+            cell.hyperlink = image_path

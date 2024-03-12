@@ -3,6 +3,7 @@ from unidecode import unidecode
 from dateutil import parser
 from textract import in_top_left_corner
 
+
 def extract_numbers(text):
     """
     Extract numbers from the given text using regular expressions.
@@ -11,15 +12,16 @@ def extract_numbers(text):
     :return: List of extracted numbers.
     """
     # Define the regex pattern to match numbers
-    pattern = re.compile(r'\b\d+\b')
+    pattern = re.compile(r"\b\d+\b")
 
     # Find all matches in the text
     matches = pattern.findall(text)
 
     # Concatenate the matches into a single string
-    result = ''.join(matches)
+    result = "".join(matches)
 
     return result
+
 
 def extract_float_numbers(text):
     """
@@ -29,13 +31,13 @@ def extract_float_numbers(text):
     :return: List of extracted float numbers.
     """
     # Define the regex pattern to match floating point numbers with both comma and dot as decimal separators
-    pattern = re.compile(r'[-+]?\d*[.,]?\d+|\d+')
+    pattern = re.compile(r"[-+]?\d*[.,]?\d+|\d+")
 
     # Find all matches in the text
     matches = pattern.findall(text)
 
     # Convert the matches to float numbers
-    result = [float(match.replace(',', '.')) for match in matches]
+    result = [float(match.replace(",", ".")) for match in matches]
 
     if len(result) > 0:
         result = result[0]
@@ -43,6 +45,7 @@ def extract_float_numbers(text):
         result = 0
 
     return result
+
 
 def clean_and_uppercase(text):
     """
@@ -55,10 +58,9 @@ def clean_and_uppercase(text):
     text_uppercase = text.upper()
 
     # Remove special characters
-    cleaned_text = re.sub(r'[^A-Z0-9\s]', '', unidecode(text_uppercase))
+    cleaned_text = re.sub(r"[^A-Z0-9\s]", "", unidecode(text_uppercase))
 
     return cleaned_text
-
 
 
 def get_city_and_date(text):
@@ -69,7 +71,7 @@ def get_city_and_date(text):
     :return: Tuple of (formatted_date, cleaned_details).
     """
     # Define a regex pattern to match dates in various formats
-    date_pattern = re.compile(r'\b\d{4}[-/]\d{2}[-/]\d{2}\b')
+    date_pattern = re.compile(r"\b\d{4}[-/]\d{2}[-/]\d{2}\b")
 
     # Find the first match of the date pattern
     date_match = date_pattern.search(text)
@@ -79,21 +81,24 @@ def get_city_and_date(text):
         raw_date = date_match.group()
 
         # Parse and format the date as YYYY-MM-DD
-        parsed_date = parser.parse(raw_date).strftime('%Y-%m-%d')
+        parsed_date = parser.parse(raw_date).strftime("%Y-%m-%d")
     else:
         parsed_date = None
 
     # Remove the date part from the text
-    cleaned_text = re.sub(date_pattern, '', text).strip()
+    cleaned_text = re.sub(date_pattern, "", text).strip()
 
     # Clean and uppercase the remaining details
     city = clean_and_uppercase(cleaned_text)
 
     return parsed_date, city
 
+
 def get_bank_code(BANK_CODES, blocks):
     for block in blocks:
         for bank_code in BANK_CODES:
-            if bank_code in block['Text'].lower() and in_top_left_corner(block):
+            if bank_code in block["Text"].lower() and in_top_left_corner(
+                block
+            ):
                 return bank_code
     return None

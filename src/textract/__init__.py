@@ -6,6 +6,7 @@ import os
 
 from utils import calculate_iou
 
+
 class TextractWrapper:
     """Encapsulates Textract functions."""
 
@@ -19,8 +20,9 @@ class TextractWrapper:
         self.s3_resource = s3_resource
         self.sqs_resource = sqs_resource
 
-
-    def detect_file_text(self, *, document_file_name=None, document_bytes=None):
+    def detect_file_text(
+        self, *, document_file_name=None, document_bytes=None
+    ):
         """
         Detects text elements in a local image file or from in-memory byte data.
         The image must be in PNG or JPG format.
@@ -43,7 +45,7 @@ class TextractWrapper:
             raise
         else:
             return response
-        
+
 
 def initialize_textract(credentials, region):
     """
@@ -55,29 +57,32 @@ def initialize_textract(credentials, region):
     """
     try:
         textract_client = boto3.client(
-            'textract',
+            "textract",
             region_name=region,
-            aws_access_key_id=credentials['aws_access_key_id'],
-            aws_secret_access_key=credentials['aws_secret_access_key']
+            aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"],
         )
         s3_resource = boto3.resource(
-            's3',
+            "s3",
             region_name=region,
-            aws_access_key_id=credentials['aws_access_key_id'],
-            aws_secret_access_key=credentials['aws_secret_access_key']
+            aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"],
         )
         sqs_resource = boto3.resource(
-            'sqs',
+            "sqs",
             region_name=region,
-            aws_access_key_id=credentials['aws_access_key_id'],
-            aws_secret_access_key=credentials['aws_secret_access_key']
+            aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"],
         )
 
-        textract_wrapper = TextractWrapper(textract_client, s3_resource, sqs_resource)
+        textract_wrapper = TextractWrapper(
+            textract_client, s3_resource, sqs_resource
+        )
         return textract_wrapper
     except NoCredentialsError:
-        print('Credentials not available.')
+        print("Credentials not available.")
         return None
+
 
 def process_image(textract_wrapper, image_path):
     """
@@ -88,33 +93,40 @@ def process_image(textract_wrapper, image_path):
     :return: The result from TextractWrapper's detect_file_text method.
     """
     try:
-        result = textract_wrapper.detect_file_text(document_file_name=image_path)
+        result = textract_wrapper.detect_file_text(
+            document_file_name=image_path
+        )
         return result
     except NoCredentialsError:
-        print('Credentials not available.')
-        return None  
-    
+        print("Credentials not available.")
+        return None
+
+
 def setup_textract():
-  AWS_CREDENTIALS = {
-    'aws_access_key_id': os.environ.get('TEXTRACT_AWS_ACCESS_KEY_ID'),
-    'aws_secret_access_key': os.environ.get('TEXTRACT_AWS_SECRET_ACCESS_KEY_ID')
-  }
+    AWS_CREDENTIALS = {
+        "aws_access_key_id": os.environ.get("TEXTRACT_AWS_ACCESS_KEY_ID"),
+        "aws_secret_access_key": os.environ.get(
+            "TEXTRACT_AWS_SECRET_ACCESS_KEY_ID"
+        ),
+    }
 
-  AWS_REGION = os.environ.get('TEXTRACT_AWS_REGION')
+    AWS_REGION = os.environ.get("TEXTRACT_AWS_REGION")
 
-  textract = initialize_textract(AWS_CREDENTIALS, AWS_REGION)
+    textract = initialize_textract(AWS_CREDENTIALS, AWS_REGION)
 
-  return textract
+    return textract
 
 
 def in_top_left_corner(block):
-    if block["Geometry"]["BoundingBox"]["Top"] < 0.5 and \
-        block["Geometry"]["BoundingBox"]["Left"] < 0.5:
+    if (
+        block["Geometry"]["BoundingBox"]["Top"] < 0.5
+        and block["Geometry"]["BoundingBox"]["Left"] < 0.5
+    ):
         return True
     return False
 
 
-def extract_detail(box, blocks, max_boxes=1, sep=' '):
+def extract_detail(box, blocks, max_boxes=1, sep=" "):
     """
     Extract details from blocks that best match the given box.
 
@@ -152,11 +164,32 @@ def extract_detail(box, blocks, max_boxes=1, sep=' '):
     # Concatenate text and calculate minimum confidence
     if top_blocks:
         # Sort top_blocks based on Left and Top coordinates
-        top_blocks.sort(key=lambda block: (block["Geometry"]["BoundingBox"]["Top"], block["Geometry"]["BoundingBox"]["Left"]))
+        top_blocks.sort(
+            key=lambda block: (
+                block["Geometry"]["BoundingBox"]["Top"],
+                block["Geometry"]["BoundingBox"]["Left"],
+            )
+        )
 
         # Concatenate text and calculate minimum confidence
-        concatenated_text = sep.join([block.get("Text", "") for block in top_blocks if block is not None])
-        min_confidence = min([block.get("Confidence", 0.0) for block in top_blocks if block is not None])
-        return concatenated_text, min_confidence, min(top_iou_scores) # min to be pesimistic
+        concatenated_text = sep.join(
+            [
+                block.get("Text", "")
+                for block in top_blocks
+                if block is not None
+            ]
+        )
+        min_confidence = min(
+            [
+                block.get("Confidence", 0.0)
+                for block in top_blocks
+                if block is not None
+            ]
+        )
+        return (
+            concatenated_text,
+            min_confidence,
+            min(top_iou_scores),
+        )  # min to be pessimistic
     else:
         return None, 0.0, 0.0
